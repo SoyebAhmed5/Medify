@@ -11,6 +11,7 @@ content %}
   </div>
   <div class="soft-card form-card">
     <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="mb-3">
         <label class="form-label">Item name</label
         ><input
@@ -28,10 +29,9 @@ content %}
         </select>
       </div>
       <div class="mb-3">
-        <label class="form-label"
-          >Expiry date
-          <span class="muted fw-normal">(if applicable)</span></label
-        ><input type="date" name="expiry_date" class="form-control" />
+        <label class="form-label" for="expiry-date">Expiry date <span class="muted fw-normal">(required for medicines)</span></label>
+        <input id="expiry-date" type="date" name="expiry_date" class="form-control" />
+        <div class="small muted mt-2">Medicines must have a future expiry date. Do not list expired medicines.</div>
       </div>
       <div class="mb-4">
         <label class="form-label"
@@ -40,7 +40,7 @@ content %}
           type="file"
           name="image"
           class="form-control"
-          accept="image/*" />
+          accept="image/png,image/jpeg" />
         <div class="small muted mt-2">
           A clear photo helps reviewers identify the item.
         </div>

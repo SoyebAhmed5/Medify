@@ -1,0 +1,28 @@
+# Python bytecode and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+myenv/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Local databases and backups (keep the provided development DB separately backed up)
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -26,6 +26,7 @@ content %}
         <p class="muted mb-0">It only takes a minute.</p>
       </div>
       <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
           <label class="form-label">Full name</label
           ><input

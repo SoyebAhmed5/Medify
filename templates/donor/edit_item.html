@@ -8,6 +8,7 @@ content %}
   </div>
   <div class="soft-card form-card">
     <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="mb-3">
         <label class="form-label">Item name</label
         ><input
@@ -43,12 +44,9 @@ content %}
         </select>
       </div>
       <div class="mb-3">
-        <label class="form-label">Expiry date</label
-        ><input
-          type="date"
-          name="expiry_date"
-          class="form-control"
-          value="{{ item.expiry_date }}" />
+        <label class="form-label" for="expiry-date">Expiry date <span class="muted fw-normal">(required for medicines)</span></label>
+        <input id="expiry-date" type="date" name="expiry_date" class="form-control" value="{{ item.expiry_date or '' }}" />
+        <div class="small muted mt-2">Medicines must have a future expiry date.</div>
       </div>
       <div class="mb-4">
         <label class="form-label">Replace photo</label
@@ -56,7 +54,7 @@ content %}
           type="file"
           name="image"
           class="form-control"
-          accept="image/*" />{% if item.image_path %}
+          accept="image/png,image/jpeg" />{% if item.image_path %}
         <div class="small muted mt-2">Current file: {{ item.image_path }}</div>
         {% endif %}
       </div>

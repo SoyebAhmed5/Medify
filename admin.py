@@ -1,11 +1,10 @@
 from flask import Blueprint, render_template
-from flask_login import login_required, current_user
+from flask_login import current_user
+from security import role_required
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 @admin.route('/dashboard')
-@login_required
+@role_required('admin')
 def dashboard():
-    if current_user.role != 'admin':
-        return "Access Denied - You are not admin", 403
     return render_template('admin/dashboard.html', user=current_user)

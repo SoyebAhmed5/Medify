@@ -1,48 +1,5 @@
-{% extends "base.html" %}{% block title %}Recipient dashboard{% endblock %} {%
-block content %}
-<div class="hero mb-4">
-  <div class="eyebrow mb-2">{{ user.role|capitalize }} workspace</div>
-  <h1 class="display-6 mb-2">Welcome, {{ user.name.split(' ')[0] }}.</h1>
-  <p class="mb-0 opacity-75">
-    Find verified donations and request the items your organisation needs.
-  </p>
-</div>
-<div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="soft-card stat-card">
-      <div class="muted small">Available donations</div>
-      <div class="stat-value mt-2">—</div>
-      <div class="small muted mt-2">Marketplace coming next</div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="soft-card stat-card">
-      <div class="muted small">My requests</div>
-      <div class="stat-value mt-2">—</div>
-      <div class="small muted mt-2">Request tracking</div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="soft-card stat-card">
-      <div class="muted small">Approved</div>
-      <div class="stat-value mt-2">—</div>
-      <div class="small muted mt-2">Completed claims</div>
-    </div>
-  </div>
-</div>
-<div class="soft-card empty-state">
-  <div class="empty-icon"></div>
-  <h3 class="fw-bold">Donation marketplace is next</h3>
-  <p class="muted mx-auto" style="max-width: 560px">
-    The recipient UI is prepared for browsing verified medicines and goods,
-    viewing details and submitting claim requests. The backend workflow still
-    needs to be connected.
-  </p>
-  <div class="d-flex justify-content-center gap-2">
-    <button class="btn btn-brand" disabled>Browse donations</button
-    ><button class="btn btn-light border rounded-3" disabled>
-      My requests
-    </button>
-  </div>
-</div>
+{% extends "base.html" %}{% block title %}Recipient dashboard{% endblock %}{% block content %}
+<section class="hero mb-4"><div class="row align-items-center g-3"><div class="col-lg-8"><div class="eyebrow mb-2">{{ user.role|capitalize }} workspace</div><h1 class="display-6 mb-2">Welcome, {{ user.name.split(' ')[0] }}.</h1><p class="mb-0">Discover useful donations for your organisation. Verified listings and request tracking will be connected in a later phase.</p></div><div class="col-lg-4 text-lg-end"><span class="hero-note"><span class="live-dot"></span> Recipient workspace</span></div></div></section>
+<div class="row g-3 mb-4"><div class="col-md-4"><div class="soft-card stat-card"><div class="d-flex justify-content-between"><div class="muted small">Available donations</div><span class="stat-icon">▦</span></div><div class="stat-value mt-3">—</div><div class="small muted mt-2">Marketplace not connected</div></div></div><div class="col-md-4"><div class="soft-card stat-card"><div class="d-flex justify-content-between"><div class="muted small">My requests</div><span class="stat-icon">↗</span></div><div class="stat-value mt-3">—</div><div class="small muted mt-2">Request tracking not connected</div></div></div><div class="col-md-4"><div class="soft-card stat-card"><div class="d-flex justify-content-between"><div class="muted small">Approved requests</div><span class="stat-icon">✓</span></div><div class="stat-value mt-3">—</div><div class="small muted mt-2">Fulfillment tracking not connected</div></div></div></div>
+<section class="soft-card empty-state"><div class="empty-icon">⌕</div><div class="eyebrow text-success mb-2">Coming in a later phase</div><h2 class="h3 fw-bold">Your donation marketplace</h2><p class="muted mx-auto mb-4" style="max-width:560px">When the marketplace backend is implemented, you’ll be able to browse eligible donations, review item details and submit requests from here.</p><div class="d-flex justify-content-center gap-2 flex-wrap"><button class="btn btn-brand" disabled aria-disabled="true">Browse donations</button><button class="btn btn-outline-secondary" disabled aria-disabled="true">My requests</button></div></section>
 {% endblock %}

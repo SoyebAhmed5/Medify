@@ -26,9 +26,9 @@ content %}
       <div class="d-flex justify-content-between">
         <div>
           <div class="muted small">Total donations</div>
-          <div class="stat-value mt-2">{{ items|length }}</div>
+          <div class="stat-value mt-2">{{ total_count }}</div>
         </div>
-        <!-- <div class="stat-icon">📦</div> -->
+        <div class="stat-icon" aria-hidden="true">▦</div>
       </div>
     </div>
   </div>
@@ -38,10 +38,10 @@ content %}
         <div>
           <div class="muted small">Pending review</div>
           <div class="stat-value mt-2">
-            {{ items|selectattr('status','equalto','pending')|list|length }}
+            {{ pending_count }}
           </div>
         </div>
-        <!-- <div class="stat-icon">⏳</div> -->
+        <div class="stat-icon" aria-hidden="true">◷</div>
       </div>
     </div>
   </div>
@@ -51,15 +51,15 @@ content %}
         <div>
           <div class="muted small">Verified</div>
           <div class="stat-value mt-2">
-            {{ items|selectattr('status','equalto','verified')|list|length }}
+            {{ verified_count }}
           </div>
         </div>
-        <!-- <div class="stat-icon">✓</div> -->
+        <div class="stat-icon" aria-hidden="true">✓</div>
       </div>
     </div>
   </div>
 </div>
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
   <div>
     <h3 class="section-title mb-1">My donations</h3>
     <div class="muted small">
@@ -67,6 +67,30 @@ content %}
     </div>
   </div>
 </div>
+<form method="GET" action="{{ url_for('donor.dashboard') }}" class="soft-card p-3 mb-4" role="search">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-5">
+      <label for="donation-search" class="form-label">Search donations</label>
+      <input id="donation-search" class="form-control" type="search" name="q" value="{{ search_query }}" maxlength="100" placeholder="Search by item name">
+    </div>
+    <div class="col-md-3">
+      <label for="donation-status" class="form-label">Status</label>
+      <select id="donation-status" class="form-select" name="status">
+        <option value="">All statuses</option>
+        {% for value in ['pending', 'verified', 'rejected', 'claimed'] %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ value|capitalize }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label for="donation-category" class="form-label">Category</label>
+      <select id="donation-category" class="form-select" name="category">
+        <option value="">All categories</option>
+        <option value="medicine" {% if selected_category == 'medicine' %}selected{% endif %}>Medicine</option>
+        <option value="goods" {% if selected_category == 'goods' %}selected{% endif %}>Essential goods</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-grid"><button class="btn btn-brand">Apply filters</button></div>
+  </div>
+</form>
 {% if items %}
 <div class="row g-4">
   {% for item in items %}
@@ -74,8 +98,8 @@ content %}
     <div class="soft-card item-card">
       {% if item.image_path %}<img
         src="{{ url_for('static', filename='uploads/' + item.image_path) }}"
-        class="w-100 item-image" />{% else %}
-      <!-- <div class="item-placeholder">💊</div> -->
+        class="w-100 item-image" alt="Photo of {{ item.item_name }}" loading="lazy" />{% else %}
+      <div class="item-placeholder" aria-hidden="true">✚</div>
       {% endif %}
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-start gap-2">
@@ -100,6 +124,7 @@ content %}
             method="POST"
             action="{{ url_for('donor.delete_item', item_id=item.item_id) }}"
             onsubmit="return confirm('Delete this donation?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-danger-soft btn-sm">Delete</button>
           </form>
           {% else %}<span class="small muted">No actions available</span>{%
@@ -110,6 +135,17 @@ content %}
   </div>
   {% endfor %}
 </div>
+{% if pagination.pages > 1 %}
+<nav class="mt-4" aria-label="Donation pages"><ul class="pagination justify-content-center">
+  <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ url_for('donor.dashboard', page=pagination.prev_num, q=search_query, status=selected_status, category=selected_category) if pagination.has_prev else '#' }}" aria-label="Previous page">Previous</a></li>
+  {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+    {% if page_num %}<li class="page-item {% if page_num == pagination.page %}active{% endif %}"><a class="page-link" href="{{ url_for('donor.dashboard', page=page_num, q=search_query, status=selected_status, category=selected_category) }}" {% if page_num == pagination.page %}aria-current="page"{% endif %}>{{ page_num }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+  {% endfor %}
+  <li class="page-item {% if not pagination.has_next %}disabled{% endif %}"><a class="page-link" href="{{ url_for('donor.dashboard', page=pagination.next_num, q=search_query, status=selected_status, category=selected_category) if pagination.has_next else '#' }}" aria-label="Next page">Next</a></li>
+</ul></nav>
+{% endif %}
+{% elif search_query or selected_status or selected_category %}
+<div class="soft-card empty-state"><div class="empty-icon">⌕</div><h4 class="fw-bold">No matching donations</h4><p class="muted">Try changing or clearing your filters.</p><a class="btn btn-soft" href="{{ url_for('donor.dashboard') }}">Clear filters</a></div>
 {% else %}
 <div class="soft-card empty-state">
   <div class="empty-icon">＋</div>
