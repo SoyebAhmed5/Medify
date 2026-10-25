@@ -9,6 +9,7 @@ htmlcov/
 .venv/
 venv/
 myenv/
+instance/
 
 # Environment secrets
 .env
