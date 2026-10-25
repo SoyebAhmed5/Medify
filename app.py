@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from sqlalchemy import inspect, text
 from pathlib import Path
 
 from flask import Flask, redirect, url_for
@@ -78,8 +79,33 @@ def create_app(test_config=None):
 
     with app.app_context():
         db.create_all()
+        _upgrade_claim_tracking_schema()
 
     return app
+
+
+def _upgrade_claim_tracking_schema():
+    """Add Phase 7 claim tracking fields to existing databases safely.
+
+    This is an additive compatibility migration. Back up production databases before
+    deployment; use a formal migration tool for future schema changes.
+    """
+    inspector = inspect(db.engine)
+    if 'claim_requests' not in inspector.get_table_names():
+        return
+    existing = {column['name'] for column in inspector.get_columns('claim_requests')}
+    additions = {
+        'reviewed_by': 'INTEGER REFERENCES users(user_id)',
+        'reviewed_at': 'TIMESTAMP',
+        'fulfilled_at': 'TIMESTAMP',
+        'fulfillment_notes': 'TEXT',
+    }
+    missing = [(name, ddl) for name, ddl in additions.items() if name not in existing]
+    if not missing:
+        return
+    with db.engine.begin() as connection:
+        for name, ddl in missing:
+            connection.execute(text(f'ALTER TABLE claim_requests ADD COLUMN {name} {ddl}'))
 
 
 app = create_app()

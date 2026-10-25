@@ -17,7 +17,7 @@
       <div class="navbar-nav ms-lg-5 me-auto nav-main">
       {% if current_user.is_authenticated %}
         {% if current_user.role == 'donor' %}<a class="nav-link" href="{{ url_for('donor.dashboard') }}">My donations</a><a class="nav-link" href="{{ url_for('donor.add_item') }}">Add donation</a>
-        {% elif current_user.role == 'admin' %}<a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin overview</a>
+        {% elif current_user.role == 'admin' %}<a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin overview</a><a class="nav-link" href="{{ url_for('admin.donations') }}">Donations</a><a class="nav-link" href="{{ url_for('admin.claims') }}">Claim requests</a>
         {% else %}<a class="nav-link" href="{{ url_for('recipient.dashboard') }}">My workspace</a>{% endif %}
       {% endif %}
       </div>

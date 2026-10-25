@@ -9,7 +9,6 @@ htmlcov/
 .venv/
 venv/
 myenv/
-instance/
 
 # Environment secrets
 .env
@@ -27,3 +26,5 @@ instance/
 .idea/
 .DS_Store
 Thumbs.db
+
+/instance/

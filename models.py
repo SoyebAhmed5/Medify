@@ -45,10 +45,15 @@ class ClaimRequest(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('donation_items.item_id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     request_date = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected, fulfilled
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    fulfilled_at = db.Column(db.DateTime, nullable=True)
+    fulfillment_notes = db.Column(db.Text, nullable=True)
 
     item = db.relationship('DonationItem', backref='claims')
-    recipient = db.relationship('User', backref='claims')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='claims')
+    reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref='claim_reviews')
 
 
 # ---------------- VERIFICATION LOG TABLE ----------------
