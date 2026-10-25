@@ -4,7 +4,7 @@ A Flask web application intended to connect donors with NGOs and hospitals, with
 
 ## Current project status
 
-This repository is a development baseline. Authentication and donor-side donation management are present. Admin verification, recipient browsing, and claim-request workflows still require implementation and testing.
+This repository is a development baseline. Authentication, donor-side donation management, and the Phase 5 admin donation-verification workflow are implemented. Recipient browsing and claim-request processing still require implementation and testing.
 
 ## Requirements
 
@@ -56,7 +56,7 @@ Open the local URL printed by Flask. The current application creates its databas
 - `auth.py` — authentication routes
 - `donor.py` — donor donation routes
 - `recipient.py` — NGO/hospital routes
-- `admin.py` — admin routes
+- `admin.py` — admin dashboard and donation verification routes
 - `templates/` — Jinja templates
 - `static/` — CSS and uploaded assets
 - `instance/` — local instance data, including the supplied development database
@@ -94,3 +94,8 @@ python app.py
 Public registration only permits `donor`, `ngo`, and `hospital` roles. Passwords must be 12–128 characters. All state-changing forms use CSRF tokens, including logout (now POST-only). Production deployments should set `APP_ENV=production`, use HTTPS, configure a production database, and keep secrets out of source control. Admin creation requires `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables; the password must be at least 12 characters.
 
 Uploads are limited to 5 MB and PNG/JPEG file signatures are checked before saving. Medicine donations require a future expiry date. The donor dashboard supports search, category/status filters, and pagination. These checks reduce common input mistakes but do not replace a comprehensive medicine-safety verification process.
+
+
+## Admin verification (Phase 5)
+
+Admins can review pending donations, search and filter the donation queue, verify or reject submissions, and save remarks in the verification log. The admin dashboard shows live user/donation counts and recent decisions. Medicine whose expiry date is today or earlier cannot be verified. Run `py -m unittest discover -s tests -v` to run donor and admin regression tests. See `PHASE5_ADMIN_VERIFICATION.md` for details.

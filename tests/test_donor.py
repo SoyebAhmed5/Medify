@@ -42,17 +42,12 @@ class DonorWorkflowTests(unittest.TestCase):
             sess['_fresh'] = True
 
     def tearDown(self):
-        # Release the current SQLAlchemy session.
         db.session.remove()
-
-        # Leave the Flask application context.
         self.ctx.pop()
-
-        # Dispose of pooled database connections.
+        # Dispose the temporary SQLite engine before Windows removes its files.
         with self.app.app_context():
+            db.session.remove()
             db.engine.dispose()
-
-        # Delete the temporary database directory.
         self.temp_dir.cleanup()
 
     def test_medicine_requires_future_expiry(self):
