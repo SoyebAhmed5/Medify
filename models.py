@@ -68,3 +68,20 @@ class VerificationLog(db.Model):
 
     item = db.relationship('DonationItem', backref='verification_logs')
     admin = db.relationship('User', backref='verifications')
+
+# ---------------- NOTIFICATION TABLE ----------------
+class Notification(db.Model):
+    """In-app notification owned by one user."""
+    __tablename__ = 'notifications'
+
+    notification_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False, index=True)
+    actor_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    event_type = db.Column(db.String(40), nullable=False)
+    message = db.Column(db.String(500), nullable=False)
+    url_path = db.Column(db.String(200), nullable=False, default='/notifications')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    read_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref='notifications')
+    actor = db.relationship('User', foreign_keys=[actor_id])

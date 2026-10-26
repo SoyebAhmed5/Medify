@@ -6,6 +6,7 @@ from flask_login import current_user
 from sqlalchemy import or_
 
 from models import ClaimRequest, DonationItem, User, VerificationLog, db
+from notification_service import add_notification
 from security import role_required
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
@@ -165,6 +166,21 @@ def review_claim(claim_id):
             message = f'Claim for “{claim.item.item_name}” rejected; donation reservation released.'
         if remarks:
             claim.fulfillment_notes = remarks
+        recipient_message = (
+            f'Your request for “{claim.item.item_name}” was approved.'
+            if decision == 'approve' else
+            f'Your request for “{claim.item.item_name}” was rejected.'
+        )
+        add_notification(
+            user_id=claim.recipient_id, event_type=f'claim_{decision}d' if decision == 'approve' else 'claim_rejected',
+            message=recipient_message, url_path='/recipient/dashboard', actor_id=current_user.user_id,
+        )
+        add_notification(
+            user_id=claim.item.donor_id, event_type=f'claim_{decision}d' if decision == 'approve' else 'claim_rejected',
+            message=(f'A claim for your donation “{claim.item.item_name}” was approved.' if decision == 'approve'
+                     else f'A claim for your donation “{claim.item.item_name}” was rejected; the donation is available again.'),
+            url_path='/notifications', actor_id=current_user.user_id,
+        )
         db.session.commit()
     except Exception:
         db.session.rollback()
@@ -199,6 +215,16 @@ def fulfill_claim(claim_id):
         claim.fulfilled_at = datetime.utcnow()
         if notes:
             claim.fulfillment_notes = notes
+        add_notification(
+            user_id=claim.recipient_id, event_type='claim_fulfilled',
+            message=f'Your request for “{claim.item.item_name}” has been marked fulfilled.',
+            url_path='/recipient/dashboard', actor_id=current_user.user_id,
+        )
+        add_notification(
+            user_id=claim.item.donor_id, event_type='donation_fulfilled',
+            message=f'Your donation “{claim.item.item_name}” has been handed over.',
+            url_path='/notifications', actor_id=current_user.user_id,
+        )
         db.session.commit()
     except Exception:
         db.session.rollback()

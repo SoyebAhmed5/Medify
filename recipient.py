@@ -6,6 +6,7 @@ from flask_login import current_user
 from sqlalchemy import or_, update
 
 from models import ClaimRequest, DonationItem, db
+from notification_service import add_notification
 from security import role_required
 
 recipient = Blueprint('recipient', __name__, url_prefix='/recipient')
@@ -88,6 +89,11 @@ def claim_donation(item_id):
 
         claim = ClaimRequest(item_id=item_id, recipient_id=current_user.user_id, status='pending')
         db.session.add(claim)
+        add_notification(
+            user_id=item.donor_id, event_type='claim_requested',
+            message=f'A recipient requested your donation “{item.item_name}”.',
+            url_path='/notifications', actor_id=current_user.user_id,
+        )
         db.session.commit()
     except Exception:
         db.session.rollback()

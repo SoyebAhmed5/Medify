@@ -11,6 +11,9 @@ from auth import auth
 from donor import donor
 from recipient import recipient
 from admin import admin
+from notifications import notifications
+from models import Notification
+from flask_login import current_user
 
 csrf = CSRFProtect()
 
@@ -52,6 +55,7 @@ def create_app(test_config=None):
     app.register_blueprint(donor)
     app.register_blueprint(recipient)
     app.register_blueprint(admin)
+    app.register_blueprint(notifications)
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -64,6 +68,17 @@ def create_app(test_config=None):
             return db.session.get(User, int(user_id))
         except (TypeError, ValueError):
             return None
+
+    @app.context_processor
+    def inject_unread_notification_count():
+        if not current_user.is_authenticated:
+            return {'unread_notification_count': 0}
+        try:
+            count = Notification.query.filter_by(user_id=current_user.user_id, read_at=None).count()
+        except Exception:
+            # Keep template rendering resilient if a database is temporarily unavailable.
+            count = 0
+        return {'unread_notification_count': count}
 
     @app.route('/')
     def home():
