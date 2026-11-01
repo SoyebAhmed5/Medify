@@ -3,7 +3,7 @@ import secrets
 from datetime import date, datetime
 from pathlib import Path
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 
@@ -173,7 +173,9 @@ def add_item():
 @donor.route('/edit-item/<int:item_id>', methods=['GET', 'POST'])
 @role_required('donor')
 def edit_item(item_id):
-    item = DonationItem.query.get_or_404(item_id)
+    item = db.session.get(DonationItem, item_id)
+    if item is None:
+        abort(404)
     if item.donor_id != current_user.user_id:
         flash("You can't edit this item.", 'danger')
         return redirect(url_for('donor.dashboard'))
@@ -219,7 +221,9 @@ def edit_item(item_id):
 @donor.route('/delete-item/<int:item_id>', methods=['POST'])
 @role_required('donor')
 def delete_item(item_id):
-    item = DonationItem.query.get_or_404(item_id)
+    item = db.session.get(DonationItem, item_id)
+    if item is None:
+        abort(404)
     if item.donor_id != current_user.user_id:
         flash("You can't delete this item.", 'danger')
         return redirect(url_for('donor.dashboard'))

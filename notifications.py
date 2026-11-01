@@ -1,5 +1,5 @@
 """Authenticated in-app notifications and read/unread controls."""
-from datetime import datetime
+from time_utils import utc_now
 
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
@@ -38,7 +38,7 @@ def open_notification(notification_id):
     if notification is None or notification.user_id != current_user.user_id:
         abort(404)
     if notification.read_at is None:
-        notification.read_at = datetime.utcnow()
+        notification.read_at = utc_now()
         try:
             db.session.commit()
         except Exception:
@@ -60,7 +60,7 @@ def mark_read(notification_id):
     if notification is None or notification.user_id != current_user.user_id:
         abort(404)
     if notification.read_at is None:
-        notification.read_at = datetime.utcnow()
+        notification.read_at = utc_now()
         try:
             db.session.commit()
         except Exception:
@@ -75,7 +75,7 @@ def mark_read(notification_id):
 def mark_all_read():
     try:
         Notification.query.filter_by(user_id=current_user.user_id, read_at=None).update(
-            {Notification.read_at: datetime.utcnow()}, synchronize_session=False
+            {Notification.read_at: utc_now()}, synchronize_session=False
         )
         db.session.commit()
         flash('All notifications marked as read.', 'success')

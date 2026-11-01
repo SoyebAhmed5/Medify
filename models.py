@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from datetime import datetime
+from time_utils import utc_now
 
 db = SQLAlchemy()
 
@@ -13,7 +13,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)  # 'donor', 'ngo', 'hospital', 'admin'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
 
     # Flask-Login ko user_id chahiye 'id' naam se — isliye property banate hain
     def get_id(self):
@@ -31,7 +31,7 @@ class DonationItem(db.Model):
     expiry_date = db.Column(db.Date, nullable=True)  # goods ke liye null ho sakta hai
     image_path = db.Column(db.String(200), nullable=True)
     status = db.Column(db.String(20), default='pending')  # pending, verified, claimed, rejected
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
 
     # Relationship — donor ka data easily access karne ke liye
     donor = db.relationship('User', backref='donations')
@@ -44,11 +44,11 @@ class ClaimRequest(db.Model):
     claim_id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('donation_items.item_id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    request_date = db.Column(db.DateTime, default=datetime.utcnow)
+    request_date = db.Column(db.DateTime(timezone=True), default=utc_now)
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected, fulfilled
     reviewed_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
-    reviewed_at = db.Column(db.DateTime, nullable=True)
-    fulfilled_at = db.Column(db.DateTime, nullable=True)
+    reviewed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    fulfilled_at = db.Column(db.DateTime(timezone=True), nullable=True)
     fulfillment_notes = db.Column(db.Text, nullable=True)
 
     item = db.relationship('DonationItem', backref='claims')
@@ -64,7 +64,7 @@ class VerificationLog(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('donation_items.item_id'), nullable=False)
     verified_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     remarks = db.Column(db.Text, nullable=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime(timezone=True), default=utc_now)
 
     item = db.relationship('DonationItem', backref='verification_logs')
     admin = db.relationship('User', backref='verifications')
@@ -80,8 +80,8 @@ class Notification(db.Model):
     event_type = db.Column(db.String(40), nullable=False)
     message = db.Column(db.String(500), nullable=False)
     url_path = db.Column(db.String(200), nullable=False, default='/notifications')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
-    read_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False, index=True)
+    read_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     user = db.relationship('User', foreign_keys=[user_id], backref='notifications')
     actor = db.relationship('User', foreign_keys=[actor_id])

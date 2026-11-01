@@ -1,5 +1,6 @@
 """Administrative dashboard and donation verification workflow."""
-from datetime import date, datetime
+from datetime import date
+from time_utils import utc_now
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for, current_app
 from flask_login import current_user
@@ -154,7 +155,7 @@ def review_claim(claim_id):
 
     try:
         claim.reviewed_by = current_user.user_id
-        claim.reviewed_at = datetime.utcnow()
+        claim.reviewed_at = utc_now()
         if decision == 'approve':
             claim.status = 'approved'
             message = f'Claim for “{claim.item.item_name}” approved.'
@@ -212,7 +213,7 @@ def fulfill_claim(claim_id):
 
     try:
         claim.status = 'fulfilled'
-        claim.fulfilled_at = datetime.utcnow()
+        claim.fulfilled_at = utc_now()
         if notes:
             claim.fulfillment_notes = notes
         add_notification(

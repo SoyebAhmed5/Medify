@@ -25,10 +25,16 @@ def create_app(test_config=None):
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
+    secret_key = os.getenv('SECRET_KEY')
+    if is_production and (not secret_key or len(secret_key) < 32):
+        raise RuntimeError('Production SECRET_KEY must contain at least 32 characters.')
+
     app.config.update(
-        SECRET_KEY=os.getenv('SECRET_KEY'),
+        SECRET_KEY=secret_key,
         SQLALCHEMY_DATABASE_URI=database_url,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SQLALCHEMY_ENGINE_OPTIONS={'pool_pre_ping': True},
+        PREFERRED_URL_SCHEME='https' if is_production else 'http',
         UPLOAD_FOLDER=os.getenv('UPLOAD_FOLDER', str(Path(app.root_path) / 'static' / 'uploads')),
         MAX_CONTENT_LENGTH=5 * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
@@ -80,6 +86,28 @@ def create_app(test_config=None):
             count = 0
         return {'unread_notification_count': count}
 
+    @app.after_request
+    def add_security_headers(response):
+        response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+        response.headers.setdefault('X-Frame-Options', 'DENY')
+        response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+        response.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+        response.headers.setdefault('Cache-Control', 'no-store')
+        if is_production:
+            response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+        return response
+
+    @app.route('/health')
+    def health():
+        # Do not expose database credentials, hostnames, or exception details.
+        try:
+            with db.engine.connect() as connection:
+                connection.execute(text('SELECT 1'))
+            return {'status': 'ok', 'database': 'available'}, 200
+        except Exception:
+            app.logger.exception('Health check database probe failed')
+            return {'status': 'unavailable'}, 503
+
     @app.route('/')
     def home():
         return redirect(url_for('auth.login'))
@@ -87,6 +115,11 @@ def create_app(test_config=None):
     @app.errorhandler(403)
     def forbidden(_error):
         return 'Access denied. You do not have permission to perform this action.', 403
+
+    @app.errorhandler(500)
+    def internal_error(_error):
+        db.session.rollback()
+        return 'An unexpected error occurred. Please try again later.', 500
 
     @app.errorhandler(413)
     def file_too_large(_error):
