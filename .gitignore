@@ -15,11 +15,15 @@ myenv/
 .env.*
 !.env.example
 
-# Local databases and backups (keep the provided development DB separately backed up)
+# Local databases and backups
 *.sqlite
 *.sqlite3
 *.db
 *.db-journal
+
+# Uploaded user content (store separately from source control)
+static/uploads/*
+!static/uploads/.gitkeep
 
 # Editor/OS files
 .vscode/

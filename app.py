@@ -21,9 +21,14 @@ csrf = CSRFProtect()
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     is_production = os.getenv('FLASK_ENV', '').lower() == 'production' or os.getenv('APP_ENV', '').lower() == 'production'
-    database_url = os.getenv('DATABASE_URL', 'sqlite:///donation.db')
+    database_url = os.getenv('DATABASE_URL', 'sqlite:///donation.db').strip()
+    if is_production and not database_url.startswith(('postgres://', 'postgresql://', 'postgresql+psycopg://')):
+        raise RuntimeError('Production requires a PostgreSQL DATABASE_URL. Configure Render Postgres before deployment.')
+    # Render supplies postgres:// or postgresql:// URLs. Use psycopg 3 explicitly.
     if database_url.startswith('postgres://'):
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        database_url = database_url.replace('postgres://', 'postgresql+psycopg://', 1)
+    elif database_url.startswith('postgresql://'):
+        database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
 
     secret_key = os.getenv('SECRET_KEY')
     if is_production and (not secret_key or len(secret_key) < 32):
@@ -35,7 +40,10 @@ def create_app(test_config=None):
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ENGINE_OPTIONS={'pool_pre_ping': True},
         PREFERRED_URL_SCHEME='https' if is_production else 'http',
-        UPLOAD_FOLDER=os.getenv('UPLOAD_FOLDER', str(Path(app.root_path) / 'static' / 'uploads')),
+        UPLOAD_FOLDER=os.getenv(
+            'UPLOAD_FOLDER',
+            '/var/data/uploads' if is_production else str(Path(app.root_path) / 'static' / 'uploads')
+        ),
         MAX_CONTENT_LENGTH=5 * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE='Lax',

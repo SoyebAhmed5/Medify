@@ -10,3 +10,6 @@ SQLAlchemy==2.1.1
 typing_extensions==4.16.0
 Werkzeug==3.1.9
 Flask-WTF==1.2.2
+# Render production WSGI server and PostgreSQL driver
+gunicorn>=23.0,<24
+psycopg[binary]>=3.2,<4
